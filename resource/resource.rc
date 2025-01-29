@@ -1,0 +1,2 @@
+#define APPICON 101
+APPICON ICON "myicon.ico"
