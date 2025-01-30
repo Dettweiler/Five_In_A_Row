@@ -11,7 +11,9 @@
                         break;                          \
                     }
 
-char checkerboard[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1];  /* 数组表示棋盘状态，空白；【 0 】，黑子：【 1 】，白子：【 2 】 */
+/* 数组表示棋盘状态，空白；【 0 】，黑子：【 1 】，白子：【 2 】 */
+char checkerboard[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1];
+
 const char JudgeDirection[4][2] = 
 {
     {DIRECTION_L, DIRECTION_R},
@@ -19,14 +21,15 @@ const char JudgeDirection[4][2] =
     {DIRECTION_LU, DIRECTION_RD},
     {DIRECTION_LD, DIRECTION_RU}
 };
+
 unionDirection Direction;    /* 横纵坐标变化方向 */
-TypeGamer Gamer;   /* 当前玩家 */
-TypeState GameState;
-char y, x;         //横纵坐标
-char turn;         //游戏回合  
-char step;         //当前步骤
-char choice;       //选择
-char winA,winB;    //获胜次数
+TypeGamer Gamer;             /* 当前玩家 */
+TypeState GameState; 
+char y, x;                   /* 横纵坐标 */
+char turn;                   /* 游戏回合 */ 
+char step;                   /* 当前步骤 */
+char choice;                 /*  选择   */
+char winA,winB;              /* 获胜次数 */
 
 int main(void)
 {
