@@ -21,6 +21,7 @@ const char JudgeDirection[4][2] =
 };
 unionDirection Direction;    /* 横纵坐标变化方向 */
 TypeGamer Gamer;   /* 当前玩家 */
+TypeState GameState;
 char y, x;         //横纵坐标
 char turn;         //游戏回合  
 char step;         //当前步骤
@@ -31,25 +32,39 @@ int main(void)
 {
     Init();
     Play();
-    Restart();
 }
 
-void Restart(void)
+void StaManager(void)
 {
     fflush(stdin);
     choice = getchar();
     if ((choice == 'y') || (choice == 'Y'))
     {
-        main();
+        if(GameState == State_WaitESC)
+        {
+            exit(0);
+        }
+        else
+        {
+            main();
+        }
     }
     else if ((choice == 'n') || (choice == 'N'))
     {
-        exit(0);
+        if(GameState == State_WaitRST || GameState == State_WaitESC)
+        {
+            printf("\r      您已取消操作，请玩家%d继续下子。", Gamer);
+            Play();
+        }
+        else
+        {
+            exit(0);
+        }
     } 
     else
     {
         printf("     输入字符错误, 请重新输入: ");
-        Restart();
+        StaManager();
     }
 }
 
@@ -138,10 +153,10 @@ void Init(void)
 
     memset(checkerboard,0,sizeof(checkerboard));
     Direction.value = DIRECTION_INIT;
-    step = 0;
+    step = 1;
     x = CHECKER_BOARD_SIZE/2 + 1;
     y = CHECKER_BOARD_SIZE/2 + 1;
-    Gamer = (TypeGamer)(1 + step % 2);
+    Gamer = GamerA;
     Update();
 }
 
@@ -199,6 +214,19 @@ void Select(void)
             }
             break;
 
+        case 'r':
+        case 'R':
+            GameState = State_WaitRST;
+            printf("\r      注意, 此操作无法撤回!!               \n      是否需要重新开始游戏(Y/N):");  /* 准备重启游戏, 并询问是否继续 */
+            StaManager();
+            break;
+
+        case KEYCODE_ESC:
+            GameState = State_WaitESC;
+            printf("\r      注意, 此操作无法撤回!!               \n      是否需要直接退出游戏(Y/N):");  /* 准备重启游戏, 并询问是否继续 */
+            StaManager();
+            break;
+
         case '\r':
             return;
             break;
@@ -225,14 +253,23 @@ void Play(void)
 
     if (Judge(y, x))
     {
+        GameState = State_Win;
         winA += (Gamer==GamerA? 1 : 0);
         winB += (Gamer==GamerB? 1 : 0);
         Draw(); /* 输出获胜次数 */
         printf("\r      玩家%d获胜!!               \n      是否进行第%d场游戏(Y/N):", Gamer, ++turn);  /* 更新 turn 并询问是否继续 */
+        StaManager();
+    }
+    else if ((++step) > (CHECKER_BOARD_SIZE*CHECKER_BOARD_SIZE))    /* 更新 step 判断是否为平局 */
+    {
+        GameState = State_Tie;
+        printf("\r      此局为平手!!               \n      是否进行第%d场游戏(Y/N):",  ++turn);  /* 更新 turn 并询问是否继续 */
+        StaManager();
     }
     else
     {
-        Gamer = (TypeGamer)(1 + (++step) % 2);  /* 更新 step 与 Gamer */
+        GameState = State_Normal;
+        Gamer = Gamer==GamerA ? GamerB : GamerA;  /* 更新 Gamer */
         Draw(); /* 输出下棋者信息 */
         Play();
     }
@@ -261,7 +298,7 @@ void Count(char* ptrWinflag, const char DirectionValue)
     *ptrWinflag = WinFlag;
 }
 
-_Bool Judge(char y, char x)
+bool Judge(char y, char x)
 {
     for(char i = 0; i<DIRECTION_NUM ;i++)
     {

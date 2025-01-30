@@ -29,6 +29,7 @@
 #define KEYCODE_L 75
 #define KEYCODE_U 72
 #define KEYCODE_D 80
+#define KEYCODE_ESC 27
 
 #define DIRECTION_NUM   4
 #define DIRECTION_INIT  ((unsigned char)0b0000)
@@ -46,6 +47,16 @@ typedef enum
     GamerA = 1u,
     GamerB
 } TypeGamer;
+
+typedef enum 
+{
+    State_Normal ,
+    State_Win,
+    State_Tie,
+    State_WaitRST,
+    State_WaitESC
+
+} TypeState;
 
 typedef union
 {
@@ -73,6 +84,6 @@ void Play(void);
 void Update(void);
 void Select(void);
 void Move(void);
-void Restart(void);
+void StaManager(void);
 void Count(char* ptrWinflag, const char DirectionValue);
-_Bool Judge(char y, char x);
+bool Judge(char y, char x);
