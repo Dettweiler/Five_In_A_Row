@@ -1,0 +1,9 @@
+五子棋.exe
+main/main.o
+resource/resource.o
+resource/sound.wav
+main/test.c
+main/main.exe
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/c_cpp_properties.json

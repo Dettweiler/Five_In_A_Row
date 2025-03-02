@@ -20,8 +20,10 @@
 
 #define RES_DIR "./resource/"
 #define RES(x) MAKE_PATH(RES_DIR , x)
-#define BGM_RES RES(sound.wav)
+#define BGM_RES RES(BGM.wav)
+#define MOVE_RES RES(Move.wav)
 
+#define WIN_COUNT_NUM 5
 #define CHECKER_BOARD_SIZE 15
 #define BUFFER_MAX_NUM 1000
 
@@ -29,13 +31,14 @@
 #define KEYCODE_L 75
 #define KEYCODE_U 72
 #define KEYCODE_D 80
+#define KEYCODE_ESC 27
 
 #define DIRECTION_NUM   4
-#define DIRECTION_INIT  ((unsigned char)0b0000)
-#define DIRECTION_U     ((unsigned char)0b0001)
-#define DIRECTION_D     ((unsigned char)0b0010)
-#define DIRECTION_L     ((unsigned char)0b1000)
-#define DIRECTION_R     ((unsigned char)0b0100)
+#define DIRECTION_INIT  (0b0000u)
+#define DIRECTION_U     (0b0010u)
+#define DIRECTION_D     (0b0001u)
+#define DIRECTION_L     (0b1000u)
+#define DIRECTION_R     (0b0100u)
 #define DIRECTION_LU    (DIRECTION_L | DIRECTION_U)
 #define DIRECTION_LD    (DIRECTION_L | DIRECTION_D)
 #define DIRECTION_RU    (DIRECTION_R | DIRECTION_U)
@@ -46,6 +49,16 @@ typedef enum
     GamerA = 1u,
     GamerB
 } TypeGamer;
+
+typedef enum 
+{
+    State_Normal ,
+    State_Win,
+    State_Tie,
+    State_WaitRST,
+    State_WaitESC
+
+} TypeState;
 
 typedef union
 {
@@ -73,6 +86,6 @@ void Play(void);
 void Update(void);
 void Select(void);
 void Move(void);
-void Restart(void);
+void StaManager(void);
 void Count(char* ptrWinflag, const char DirectionValue);
-_Bool Judge(char y, char x);
+bool Judge(char y, char x);
