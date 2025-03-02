@@ -16,8 +16,8 @@ char checkerboard[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1];
 
 const char JudgeDirection[4][2] = 
 {
-    {DIRECTION_L, DIRECTION_R},
-    {DIRECTION_U, DIRECTION_D},
+    {DIRECTION_L , DIRECTION_R },
+    {DIRECTION_U , DIRECTION_D },
     {DIRECTION_LU, DIRECTION_RD},
     {DIRECTION_LD, DIRECTION_RU}
 };
@@ -124,26 +124,28 @@ void Init(void)
         system("chcp 65001");               //使用UTF-8编码
         system("title Five In A Row");      //窗口标题
         system("cls");                      //清除先前命令行
-        PlaySound(TEXT(BGM_RES), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
-        printf("【游戏介绍】\n\n玩家需通过键盘 W S A D 或方向键移动\n\n星标以下子。\n\n\n\n");
-        printf("\
-@@     &...&&& &.&  &&      @@@@@ \n\
- @         .&& .&&  &          @@\n\
- @          &&   &  &&          @\n\
- @           &&  &&  &&&        @\n\
- @           &&  &&    &        @\n\
- @            .                @\n\
- @                              @ \n\
-  @    @@@@@           @@@@@    @ \n\
-  @    ::                ::    @ \n\
-  @    ::                ::    @ \n\
-  @    ::                ::    @ \n\
-  @    ::      @@@@@@   ::    @ \n\
-  @           @@ @@ @@         @ \n\
-  @@          @  @@  @         @ \n\
-   @@          @@@@@@         @@ \n\
-    @@@@@@            @@@@@@@@@  \n\
-          @@@@@@@@@@@@@          \n"
+        // PlaySound(TEXT(BGM_RES), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+        printf("【游戏介绍】\n\n玩家需通过键盘 W S A D 或方向键移动\n\n星标以下子。"
+        "\n\n按下R键可重启游戏，按下ESC键可退出游戏\n\n\n\n");
+        printf
+        (
+            "@@     &...&&& &.&  &&      @@@@@ \n"
+            " @         .&& .&&  &          @@\n"
+            " @          &&   &  &&          @\n"
+            " @           &&  &&  &&&        @\n"
+            " @           &&  &&    &        @\n"
+            " @            .                @\n"
+            " @                              @ \n"
+            "  @    @@@@@           @@@@@    @ \n"
+            "  @    ::                ::    @ \n"
+            "  @    ::                ::    @ \n"
+            "  @    ::                ::    @ \n"
+            "  @    ::      @@@@@@   ::    @ \n"
+            "  @           @@ @@ @@         @ \n"
+            "  @@          @  @@  @         @ \n"
+            "   @@          @@@@@@         @@ \n"
+            "    @@@@@@            @@@@@@@@@  \n"
+            "          @@@@@@@@@@@@@          \n"
         );
 
         Sleep(5000);
