@@ -40,7 +40,7 @@ int main(void)
 void StaManager(void)
 {
     fflush(stdin);
-    choice = getchar();
+    choice = getch();
     if ((choice == 'y') || (choice == 'Y'))
     {
         if(GameState == State_WaitESC)
@@ -56,8 +56,8 @@ void StaManager(void)
     {
         if(GameState == State_WaitRST || GameState == State_WaitESC)
         {
-            printf("\r      您已取消操作，请玩家%d继续下子。", Gamer);
-            Play();
+            printf("\r      您已取消操作，请玩家%d继续下子。\n", Gamer);
+            return;
         }
         else
         {
@@ -66,7 +66,7 @@ void StaManager(void)
     } 
     else
     {
-        printf("     输入字符错误, 请重新输入: ");
+        printf("\n     输入字符错误, 请重新输入: ");
         StaManager();
     }
 }
@@ -249,6 +249,7 @@ void Move(void)
         printf("\n这个位置已经有棋子了, 请重新下子。");
         Move();
     }
+    // PlaySound(TEXT(MOVE_RES), NULL, SND_FILENAME | SND_SYNC);
     checkerboard[y][x] = Gamer;
 }
 
@@ -310,7 +311,7 @@ bool Judge(char y, char x)
         char WinFlag = 1;
         Count(&WinFlag,JudgeDirection[i][0]);
         Count(&WinFlag,JudgeDirection[i][1]);
-        if (WinFlag >= 5)
+        if (WinFlag >= WIN_COUNT_NUM)
            return TRUE;
     }
 

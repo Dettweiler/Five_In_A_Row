@@ -20,8 +20,10 @@
 
 #define RES_DIR "./resource/"
 #define RES(x) MAKE_PATH(RES_DIR , x)
-#define BGM_RES RES(sound.wav)
+#define BGM_RES RES(BGM.wav)
+#define MOVE_RES RES(Move.wav)
 
+#define WIN_COUNT_NUM 5
 #define CHECKER_BOARD_SIZE 15
 #define BUFFER_MAX_NUM 1000
 
