@@ -34,6 +34,7 @@
 #define KEYCODE_ESC 27
 
 #define DIRECTION_NUM   4
+#define POLARITY_NUM    2
 #define DIRECTION_INIT  (0b0000u)
 #define DIRECTION_U     (0b0010u)
 #define DIRECTION_D     (0b0001u)
@@ -46,7 +47,8 @@
 
 typedef enum 
 {
-    GamerA = 1u,
+    NoGamer,
+    GamerA,
     GamerB
 } TypeGamer;
 
@@ -87,5 +89,9 @@ void Update(void);
 void Select(void);
 void Move(void);
 void StaManager(void);
-void Count(char* ptrWinflag, const char DirectionValue);
-bool Judge(char y, char x);
+void Count(char* ptrWinflag, const char DirectionValue, char i, char j, TypeGamer Gamer);
+bool Judge();
+int AlphaBeta(TypeGamer board[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1], int depth, int alpha, int beta, int maximizingPlayer);
+void RobotMove();
+int Evaluate(TypeGamer Gamer);
+bool NearbyJudge(int i, int j);

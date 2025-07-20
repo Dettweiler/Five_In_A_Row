@@ -2,19 +2,21 @@
 
 #define IN_CHECKERBOARD_CONDICTION(y, x) ((x) > 0 && (x) <= CHECKER_BOARD_SIZE && (y) > 0 && (y) <= CHECKER_BOARD_SIZE)
 
-#define CHECK()     if (checkerboard[i][j] == Gamer)    \
-                    {                                   \
-                        WinFlag++;                      \
-                    }                                   \
-                    else                                \
-                    {                                   \
-                        break;                          \
-                    }
+#define CHECK(Gamer,WinFlag)    if (checkerboard[i][j] == (Gamer))    \
+                                {                                   \
+                                    (WinFlag)++;                      \
+                                }                                   \
+                                else                                \
+                                {                                   \
+                                    break;                          \
+                                }
+
+#define SWITCH_PLAYER(Gamer) ((Gamer) == GamerA ? GamerB : GamerA)
 
 /* 数组表示棋盘状态，空白；【 0 】，黑子：【 1 】，白子：【 2 】 */
-char checkerboard[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1];
+TypeGamer checkerboard[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1];
 
-const char JudgeDirection[4][2] = 
+const char JudgeDirection[DIRECTION_NUM][POLARITY_NUM] = 
 {
     {DIRECTION_L , DIRECTION_R },
     {DIRECTION_U , DIRECTION_D },
@@ -24,6 +26,7 @@ const char JudgeDirection[4][2] =
 
 unionDirection Direction;    /* 横纵坐标变化方向 */
 TypeGamer Gamer;             /* 当前玩家 */
+TypeGamer Robot;
 TypeState GameState; 
 char y, x;                   /* 横纵坐标 */
 char turn;                   /* 游戏回合 */ 
@@ -80,15 +83,15 @@ void Draw(void)
     {
         for (char j = 0;j <= CHECKER_BOARD_SIZE; j++)
         {
-            //棋子
-            if (1 == checkerboard[i][j])
+            /* 棋子 */
+            if (GamerA == checkerboard[i][j])
                 strcat(buffer,"●");
-            else if (2 == checkerboard[i][j])
+            else if (GamerB == checkerboard[i][j])
                 strcat(buffer,"◎");
-            //首行空格
+            /* 首行空格 */
             else if(0 == i)
                 strcat(buffer,"  "); 
-            //首列空格
+            /* 首列空格  */
             else if(0 == j)
                 strcat(buffer,"\n  ");
             else if ((i == 1) && (j == 1)) 
@@ -149,10 +152,10 @@ void Init(void)
         );
 
         Sleep(5000);
-        system("color E0");//窗口及字体颜色
+        system("color E0");   /* 窗口及字体颜色 */
         system("cls");
-
-        turn = 1;             //游戏回合  
+        Robot = GamerB;
+        turn = 1;             /* 游戏回合 */  
         InitFlag = TRUE;
     }
 
@@ -167,7 +170,7 @@ void Init(void)
 
 void Update(void)
 {
-    char temp;
+    TypeGamer temp;
     temp = checkerboard[y][x];
     checkerboard[y][x] = Gamer;
     Draw();
@@ -241,23 +244,30 @@ void Select(void)
 
 void Move(void)
 {
-    fflush(stdin);
-    Select();
-
-    if(0 != checkerboard[y][x])
+    if(Gamer == Robot)
     {
-        printf("\n这个位置已经有棋子了, 请重新下子。");
-        Move();
+        RobotMove();
     }
-    // PlaySound(TEXT(MOVE_RES), NULL, SND_FILENAME | SND_SYNC);
-    checkerboard[y][x] = Gamer;
+    else
+    {    
+        fflush(stdin);
+        Select();
+
+        if(NoGamer != checkerboard[y][x])
+        {
+            printf("\n这个位置已经有棋子了, 请重新下子。");
+            Move();
+        }
+        // PlaySound(TEXT(MOVE_RES), NULL, SND_FILENAME | SND_SYNC);
+        checkerboard[y][x] = Gamer;
+    }
 }
 
 void Play(void)
 {
     Move();
 
-    if (Judge(y, x))
+    if (Judge())
     {
         GameState = State_Win;
         winA += (Gamer==GamerA? 1 : 0);
@@ -275,13 +285,13 @@ void Play(void)
     else
     {
         GameState = State_Normal;
-        Gamer = Gamer==GamerA ? GamerB : GamerA;  /* 更新 Gamer */
+        Gamer = SWITCH_PLAYER(Gamer);  /* 更新 Gamer */
         Draw(); /* 输出下棋者信息 */
         Play();
     }
 }
 
-void Count(char* ptrWinflag, const char DirectionValue)
+void Count(char* ptrWinflag, const char DirectionValue, char i, char j, TypeGamer Gamer)
 {
     if (ptrWinflag == NULL)
     {
@@ -289,35 +299,151 @@ void Count(char* ptrWinflag, const char DirectionValue)
         exit(EXIT_FAILURE);
     }
 
-    char i, j, WinFlag;
+    char WinFlag;
     WinFlag = *ptrWinflag;
     Direction.value = DirectionValue;
-    i = y; j = x;
 
     while (IN_CHECKERBOARD_CONDICTION(i, j) && WinFlag <= 5)
     {
         i += Direction.yPositive - Direction.yNegative;
         j += Direction.xPositive - Direction.xNegative;
-        CHECK();
+        CHECK(Gamer,WinFlag);
     }
 
     *ptrWinflag = WinFlag;
 }
 
-bool Judge(char y, char x)
+bool Judge()
 {
     for(char i = 0; i<DIRECTION_NUM ;i++)
     {
         char WinFlag = 1;
-        Count(&WinFlag,JudgeDirection[i][0]);
-        Count(&WinFlag,JudgeDirection[i][1]);
-        if (WinFlag >= WIN_COUNT_NUM)
-           return TRUE;
+        for(char j = 0; j<POLARITY_NUM ;j++)
+        {
+            Count(&WinFlag,JudgeDirection[i][j],y,x,Gamer);
+            if (WinFlag >= WIN_COUNT_NUM)
+                return TRUE;
+        }
     }
 
     return FALSE;
 }
 
+// Alpha-Beta剪枝算法实现
+int AlphaBeta(TypeGamer board[CHECKER_BOARD_SIZE+1][CHECKER_BOARD_SIZE+1], int depth, int alpha, int beta, int maximizingPlayer) {
+    if(depth == 0) 
+        return Evaluate(Robot) - Evaluate(SWITCH_PLAYER(Robot));
+    
+    if(maximizingPlayer) 
+    {
+        int maxEval = -9999;
+        for(int i=1; i<=CHECKER_BOARD_SIZE; i++) 
+        {
+            for(int j=1; j<=CHECKER_BOARD_SIZE; j++) 
+            {
+                if(board[i][j] == NoGamer) 
+                { // 空位
+                    board[i][j] = Robot; // AI下子
+                    int eval = AlphaBeta(board, depth-1, alpha, beta, 0);
+                    board[i][j] = NoGamer; // 撤销
+                    maxEval = (eval > maxEval) ? eval : maxEval;
+                    alpha = (alpha > eval) ? alpha : eval;
+                    if(beta <= alpha) 
+                        break; // β剪枝
+                }
+            }
+        }
+        return maxEval;
+    } 
+    else 
+    {
+        int minEval = 9999;
+        for(int i=1; i<=CHECKER_BOARD_SIZE; i++) 
+        {
+            for(int j=1; j<=CHECKER_BOARD_SIZE; j++) 
+            {
+                if(board[i][j] == NoGamer) 
+                {
+                    board[i][j] = SWITCH_PLAYER(Robot); // 玩家下子
+                    int eval = AlphaBeta(board, depth-1, alpha, beta, 1);
+                    board[i][j] = NoGamer; // 撤销
+                    minEval = (eval < minEval) ? eval : minEval;
+                    beta = (beta < eval) ? beta : eval;
+                    if(beta <= alpha) 
+                        break; // α剪枝
+                }
+            }
+        }
+        return minEval;
+    }
+}
+
+// AI自动下棋函数
+void RobotMove() {
+    int bestScore = -9999;
+    int bestMove[2] = {0};
+    
+    for(int i=1; i<=CHECKER_BOARD_SIZE; i++) 
+    {
+        for(int j=1; j<=CHECKER_BOARD_SIZE; j++) 
+        {
+            if(checkerboard[i][j] == NoGamer && NearbyJudge(i,j)) 
+            {
+                checkerboard[i][j] = Robot; // 假设AI下子
+                int score = AlphaBeta(checkerboard, 3, -9999, 9999, 0); // 搜索深度3层
+                checkerboard[i][j] = NoGamer; // 撤销
+                
+                if(score > bestScore) 
+                {
+                    bestScore = score;
+                    bestMove[0] = i;
+                    bestMove[1] = j;
+                }
+            }
+        }
+    }
+    
+    if(bestMove[0] != 0) 
+        checkerboard[bestMove[0]][bestMove[1]] = Robot; // 实际下子
+}
+
+int Evaluate(TypeGamer Gamer)
+{
+    int score = 0;
+    for(int i=1; i<=CHECKER_BOARD_SIZE; i++) 
+    {
+        for(int j=1; j<=CHECKER_BOARD_SIZE; j++) 
+        {
+            if(checkerboard[i][j] == Gamer) 
+            {
+                for(char ni = 0; ni<DIRECTION_NUM ;ni++)
+                {
+                    char WinFlag = 1;
+                    for(char nj = 0; nj<POLARITY_NUM ;nj++)
+                    {
+                        Count(&WinFlag,JudgeDirection[ni][nj],y,x,Gamer);
+                    }
+                    score += WinFlag * WinFlag;
+                }
+            }
+        }
+    }
+    return score;
+}
+// 判断是否在已有棋子周围
+bool NearbyJudge(int i, int j) 
+{
+    for(int di = -2; di <= 2; di++) 
+    {
+        for(int dj = -2; dj <= 2; dj++) 
+        {
+            int ni = i + di, nj = j + dj;
+            if(checkerboard[ni][nj] != NoGamer) 
+                return true;
+        }
+    }
+    return false;
+}
                            /*_oo0oo_\
                            088888880\
                            88” . “88\
